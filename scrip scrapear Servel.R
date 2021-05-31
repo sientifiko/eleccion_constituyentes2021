@@ -179,6 +179,8 @@ consolidado$pacto <- case_when(
 
 write.csv(consolidado, "votacion_comuna.csv", row.names = F)
 
+# consolidado <- read.csv("votacion_comuna.csv")
+
 casen <- read_rds("2017.rds")
 
 diseno1 <- configuracion_disenio(casen, "ytotcorh", "comuna", "expc")
@@ -336,6 +338,49 @@ ggplot(voto_esperado, aes(interval, medias, fill = pacto)) +
   labs(x="Intérvalos de porcentaje de pobreza comunal 2017",
        y= "Ìndice de desempeño electoral promedio",
        title = "Votos esperados por nivel de pobreza comunal")
+
+
+
+# =========== DESEMPEÑO ELECTORAL SECTORES RURALES ============
+
+
+svytable(~zona+comuna, svy_casen) %>%
+  as.data.frame() -> ruralidad
+
+ruralidad$zona <- case_when(
+  ruralidad$zona == 1 ~ "Urbano",
+  T ~ "Rural"
+) 
+
+ruralidad2 <- ruralidad %>%
+  spread(zona, Freq)
+
+ruralidad2$comuna <- formatear_comuna(ruralidad2$comuna)
+
+ruralidad2$p_rural <- ruralidad2$Rural/(
+  ruralidad2$Rural + ruralidad2$Urbano
+)
+
+
+voto_rural <- comuna_pond %>%
+  inner_join(ruralidad2, by = "comuna")
+
+
+ggplot(voto_rural,
+       aes(p_rural, voto_w2, color = pacto)) +
+  theme_classic() +
+  guides(color = "none") +
+  geom_jitter() +
+  geom_smooth(method = "lm") +
+  scale_x_continuous(labels = scales::percent) +
+  # scale_x_continuous(trans = "log10") +
+  facet_wrap(.~pacto) +
+  labs(x="% ruralidad comunal 2017", 
+       y="Índice de desempeño electoral",
+       title = "Votación y ruralidad",
+       subtitle = "Voto comunal ponderado por cantidad de votos y candidatos a nivel nacional",
+       caption = "Elaborado por @sientifiko1")
+
 
 
 
