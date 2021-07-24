@@ -253,6 +253,10 @@ comunas_w$indice_electoral <- comunas_w$votos_w2 / comunas_w$total_w
 rm(total_pacto, distrito_w, total_w2, lista, delpueblo, distritos, resumen_cdidat)
 
 
+write.csv(comunas_w, "votacion_comunas.csv", row.names = F)
+
+
+
 # =================  DESDE ACÁ ANÁLISIS =================
 
 casen <- read_rds("2017.rds")
